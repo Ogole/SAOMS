@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Face Check-In{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header bg-success text-white text-center">
+                    <h5 class="mb-0"><i class="bi bi-camera"></i> Face Recognition Check-In</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="scanner-container mb-3">
+                        <video id="video" width="100%" autoplay playsinline></video>
+                        <div class="scanner-overlay"></div>
+                    </div>
+                    
+                    <div id="scanStatus" class="mb-3">
+                        <span class="badge bg-info">Scanning for face...</span>
+                    </div>
+                    
+                    <form method="post" id="checkInForm" style="display:none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="face_image_data" id="faceImageData">
+                    </form>
+                    
+                    <div id="result" class="mt-3"></div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6>Time</h6>
+                            <h3 id="currentTime">--:--</h3>
+                        </div>
+                        <div class="col-6">
+                            <h6>Status</h6>
+                            <h3><span class="badge bg-success" id="connectionStatus">Online</span></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let stream = null;
+let scanning = true;
+
+async function initCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: 640, height: 480 }
+        });
+        document.getElementById('video').srcObject = stream;
+        startAutoScan();
+    } catch(e) {
+        document.getElementById('scanStatus').innerHTML = '<span class="badge bg-danger">Camera access denied</span>';
+    }
+}
+
+function startAutoScan() {
+    setInterval(() => {
+        if (scanning) captureAndSend();
+    }, 2000);
+}
+
+function captureAndSend() {
+    const video = document.getElementById('video');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    
+    const imageData = canvas.toDataURL('image/jpeg');
+    document.getElementById('faceImageData').value = imageData;
+    
+    const formData = new FormData(document.getElementById('checkInForm'));
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            scanning = false;
+            document.getElementById('scanStatus').innerHTML = 
+                `<span class="badge bg-success">✅ Welcome ${data.name}!</span>`;
+            document.getElementById('result').innerHTML = 
+                `<div class="alert alert-success">Check-in successful!</div>`;
+            setTimeout(() => window.location.href = data.redirect, 1500);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initCamera);
+
+setInterval(() => {
+    document.getElementById('currentTime').textContent = 
+        new Date().toLocaleTimeString('en-US', { hour12: false });
+}, 1000);
+
+window.addEventListener('beforeunload', () => {
+    if (stream) stream.getTracks().forEach(track => track.stop());
+});
+</script>
+{% endblock %}

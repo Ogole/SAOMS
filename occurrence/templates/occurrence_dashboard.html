@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Case Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-file-earmark-text"></i> Case Management Dashboard</h2>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <h6>Total Cases</h6>
+                <div class="number">{{ total_cases }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <h6>Open Cases</h6>
+                <div class="number">{{ open_cases }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <h6>Investigating</h6>
+                <div class="number">{{ investigating }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <h6>Closed</h6>
+                <div class="number">{{ closed_cases }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <a href="{% url 'occurrence:create' %}" class="btn btn-primary btn-lg w-100">
+                <i class="bi bi-plus-circle"></i> Report New Case
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{% url 'occurrence:list' %}" class="btn btn-outline-primary btn-lg w-100">
+                <i class="bi bi-list"></i> View All Cases
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Cases -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Recent Cases</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Type</th>
+                            <th>Reporter</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in recent_cases %}
+                        <tr>
+                            <td><strong>{{ case.reference_number }}</strong></td>
+                            <td>{{ case.get_crime_type_display }}</td>
+                            <td>{{ case.reporter_full_name }}</td>
+                            <td>
+                                <span class="badge {% if case.case_status == 'OPEN' %}bg-warning
+                                    {% elif case.case_status == 'INVESTIGATING' %}bg-info
+                                    {% elif case.case_status == 'CLOSED' %}bg-success
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ case.get_case_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ case.date_reported|date:"d/m/Y" }}</td>
+                            <td>
+                                <a href="{% url 'occurrence:detail' case.reference_number %}" 
+                                   class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">No cases yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Regional Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-map"></i> {{ region.name|default:"Region" }} Dashboard</h2>
+       
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white text-center p-3">
+                <h3>{{ total_districts }}</h3><small>Districts</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white text-center p-3">
+                <h3>{{ total_stations }}</h3><small>Stations</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white text-center p-3">
+                <h3>{{ total_officers }}</h3><small>Officers</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white text-center p-3">
+                <h3>{{ today_attendance }}</h3><small>Present Today</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Districts Overview -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Districts in {{ region.name }}</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead><tr><th>District</th><th>Stations</th><th>Officers</th><th>Commander</th></tr></thead>
+                <tbody>
+                    {% for district in districts %}
+                    <tr>
+                        <td><strong>{{ district.name }}</strong></td>
+                        
+                        <td>{{ district.stations.count }}</td>
+                        <td>{{ district.total_officers }}</td>
+                        <td>{{ district.district_commander.user.get_full_name|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Cases -->
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Recent Cases</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead><tr><th>Reference</th><th>Type</th><th>Station</th><th>Status</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for case in recent_cases %}
+                    <tr>
+                        <td><a href="{% url 'occurrence:detail' case.reference_number %}">{{ case.reference_number }}</a></td>
+                        <td>{{ case.get_crime_type_display }}</td>
+                        <td>{{ case.station.name|default:"-" }}</td>
+                        <td><span class="badge bg-{% if case.case_status == 'OPEN' %}warning{% elif case.case_status == 'CLOSED' %}success{% else %}info{% endif %}">{{ case.get_case_status_display }}</span></td>
+                        <td>{{ case.date_reported|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row mt-4">
+        <div class="col-md-4"><a href="{% url 'occurrence:list' %}" class="btn btn-primary w-100"><i class="bi bi-list"></i> All Cases</a></div>
+        <div class="col-md-4"><a href="{% url 'attendance:dashboard' %}" class="btn btn-success w-100"><i class="bi bi-fingerprint"></i> Attendance</a></div>
+        <div class="col-md-4"><a href="{% url 'occurrence:statistics' %}" class="btn btn-info w-100"><i class="bi bi-graph-up"></i> Reports</a></div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Regions{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-map"></i> Manage Regions</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRegionModal">
+            <i class="bi bi-plus-circle"></i> Add Region
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                        
+                            <th>Headquarters</th>
+                            <th>Districts</th>
+                            <th>Stations</th>
+                            <th>Officers</th>
+                            <th>Commander</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for region in regions %}
+                        <tr>
+                            <td><strong>{{ region.name }}</strong></td>
+                           
+                            <td>{{ region.headquarters_location|default:"-" }}</td>
+                            <td>{{ region.districts.count }}</td>
+                            <td>{{ region.total_stations }}</td>
+                            <td>{{ region.total_officers }}</td>
+                            <td>{{ region.regional_commander.user.get_full_name|default:"-" }}</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="8" class="text-center">No regions found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Region Modal -->
+<div class="modal fade" id="addRegionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add Region</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'core:add_region' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Region Name *</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                   
+                    <div class="mb-3">
+                        <label class="form-label">Headquarters Location</label>
+                        <input type="text" name="headquarters" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" name="contact" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Region</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

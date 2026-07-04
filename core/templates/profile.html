@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-person"></i> My Profile</h2>
+
+    <div class="row">
+        <!-- Profile Card -->
+        <div class="col-md-4">
+            <div class="card text-center">
+            <div class="card-body text-center">
+        {% if profile.has_face_enrolled %}
+        <img src="{% url 'core:officer_photo' profile.id %}" 
+            class="rounded-circle" 
+            style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #1a237e;">
+        {% else %}
+        <i class="bi bi-person-circle" style="font-size: 5rem; color: #1a237e;"></i>
+        {% endif %}
+        <h4 class="mt-3">{{ request.user.get_full_name }}</h4>
+        <span class="badge bg-primary">{{ profile.get_rank_display }}</span>
+        <hr>
+        <p><strong>Force/File Number:</strong> {{ profile.get_officer_number }}</p>
+        <p><strong>Role:</strong> {{ profile.get_role_display }}</p>
+        </div>
+        </div>
+        </div>
+
+        <!-- Details -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Username</label>
+                            <p class="fw-bold">{{ request.user.username }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Email</label>
+                            <p class="fw-bold">{{ request.user.email }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Phone</label>
+                            <p class="fw-bold">{{ request.user.phone|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Date of Birth</label>
+                            <p class="fw-bold">{{ profile.date_of_birth |default:"Not Set" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Station</label>
+                            <p class="fw-bold">{{ profile.current_station.name|default:"Not assigned" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Date Joined</label>
+                            <p class="fw-bold">{{ profile.date_joined_force|date:"F Y"|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Summary -->
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Attendance Summary</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-4">
+                            <h3 class="text-success">-</h3>
+                            <small>This Month</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-warning">-</h3>
+                            <small>Late</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-danger">-</h3>
+                            <small>Absent</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

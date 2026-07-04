@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Case {{ occurrence.reference_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-file-earmark-text"></i> 
+            {{ occurrence.reference_number }}
+        </h2>
+        <span class="badge bg-{% if occurrence.case_status == 'OPEN' %}warning
+            {% elif occurrence.case_status == 'INVESTIGATING' %}info
+            {% elif occurrence.case_status == 'CLOSED' %}success{% endif %} p-2">
+            {{ occurrence.get_case_status_display }}
+        </span>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <!-- Case Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Case Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>WHAT:</strong> {{ occurrence.what_happened }}</p>
+                    <p><strong>WHEN:</strong> {{ occurrence.when_it_happened|date:"F j, Y H:i" }}</p>
+                    <p><strong>WHERE:</strong> {{ occurrence.where_it_happened }}</p>
+                    <p><strong>WHO:</strong> {{ occurrence.who_was_involved }}</p>
+                    <p><strong>WHY:</strong> {{ occurrence.why_it_happened|default:"Unknown" }}</p>
+                    <p><strong>HOW:</strong> {{ occurrence.how_it_happened }}</p>
+                </div>
+            </div>
+
+            <!-- Witnesses -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Witnesses ({{ witnesses.count }})</h5>
+                    <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addWitnessModal">
+                        <i class="bi bi-plus"></i> Add
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% for witness in witnesses %}
+                    <div class="border-bottom pb-2 mb-2">
+                        <strong>{{ witness.full_name }}</strong> ({{ witness.sex }}, {{ witness.age }})
+                        <p class="text-muted mt-1">{{ witness.statement }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No witnesses recorded</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Reporter Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Reporter Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ occurrence.reporter_full_name }}</p>
+                    <p><strong>Sex:</strong> {{ occurrence.reporter_sex }}</p>
+                    <p><strong>Age:</strong> {{ occurrence.reporter_age }}</p>
+                    <p><strong>Contact:</strong> {{ occurrence.reporter_contact }}</p>
+                    <p><strong>Residence:</strong> {{ occurrence.reporter_residence }}</p>
+                </div>
+            </div>
+
+            <!-- Update Status -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'occurrence:update_status' occurrence.reference_number %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <select name="new_status" class="form-control" required>
+                                <option value="">Select New Status</option>
+                                {% for code, name in occurrence.CASE_STATUS %}
+                                <option value="{{ code }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <textarea name="update_text" class="form-control" rows="3" 
+                                      placeholder="Update details..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100">Update</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Case Timeline</h5>
+                </div>
+                <div class="card-body">
+                    {% for update in updates %}
+                    <div class="border-start border-primary ps-3 mb-3">
+                        <small class="text-muted">{{ update.created_at|date:"d/m/Y H:i" }}</small>
+                        <p class="mb-0"><strong>{{ update.get_new_status_display }}</strong></p>
+                        <p class="text-muted">{{ update.update_text }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No updates yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Witness Modal -->
+<div class="modal fade" id="addWitnessModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'occurrence:add_witness' occurrence.reference_number %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Witness</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="full_name" class="form-control" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Sex</label>
+                            <select name="sex" class="form-control" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Age</label>
+                            <input type="number" name="age" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact</label>
+                        <input type="text" name="contact" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Residence</label>
+                        <textarea name="residence" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Relationship</label>
+                        <textarea name="relationship_to_case" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Statement</label>
+                        <textarea name="statement" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Witness</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

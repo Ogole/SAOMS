@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}HQ Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-building"></i> Headquarters Dashboard</h2>
+
+    <!-- Top Stats -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white text-center p-3">
+                <i class="bi bi-map" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ total_regions }}</h3>
+                <small>Regions</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white text-center p-3">
+                <i class="bi bi-geo-alt" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ total_districts }}</h3>
+                <small>Districts</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white text-center p-3">
+                <i class="bi bi-building" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ total_stations }}</h3>
+                <small>Stations</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-white text-center p-3">
+                <i class="bi bi-people" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ total_officers }}</h3>
+                <small>Officers</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white text-center p-3">
+                <i class="bi bi-file-earmark-text" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ total_cases }}</h3>
+                <small>Total Cases</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white text-center p-3">
+                <i class="bi bi-person-check" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ today_attendance }}</h3>
+                <small>Present Today</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <a href="{% url 'core:add_region' %}" class="btn btn-primary w-100 mb-2"><i class="bi bi-plus-circle"></i> Add Region</a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'core:add_district' %}" class="btn btn-info w-100 mb-2"><i class="bi bi-plus-circle"></i> Add District</a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'core:add_station' %}" class="btn btn-success w-100 mb-2"><i class="bi bi-plus-circle"></i> Add Station</a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'occurrence:list' %}" class="btn btn-warning w-100 mb-2"><i class="bi bi-list"></i> View All Cases</a>
+        </div>
+    </div>
+
+    <!-- Regions Overview -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-map"></i> Regions Overview</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Region</th>
+                            <th>Districts</th>
+                            <th>Stations</th>
+                            <th>Officers</th>
+                            <th>Commander</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for region in regions %}
+                        <tr>
+                            <td><strong>{{ region.name }}</strong></td>
+                            <td>{{ region.districts.count }}</td>
+                            <td>{{ region.total_stations }}</td>
+                            <td>{{ region.total_officers }}</td>
+                            <td>{{ region.regional_commander.user.get_full_name|default:"-" }}</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Cases -->
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Recent Cases</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Type</th>
+                            <th>Station</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in recent_cases %}
+                        <tr>
+                            <td><a href="{% url 'occurrence:detail' case.reference_number %}">{{ case.reference_number }}</a></td>
+                            <td>{{ case.get_crime_type_display }}</td>
+                            <td>{{ case.station.name|default:"-" }}</td>
+                            <td><span class="badge bg-{% if case.case_status == 'OPEN' %}warning{% elif case.case_status == 'CLOSED' %}success{% else %}info{% endif %}">{{ case.get_case_status_display }}</span></td>
+                            <td>{{ case.date_reported|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

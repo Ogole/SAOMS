@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}New Case{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-plus-circle"></i> New Case/Occurrence</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Reporter Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">DETAILS OF THE REPORTER/COMPLAINANT</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">1. Full Names</label>
+                        <input type="text" name="reporter_full_name" class="form-control" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">2. Sex</label>
+                        <select name="reporter_sex" class="form-control" required>
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">3. Age</label>
+                        <input type="number" name="reporter_age" class="form-control" min="0" max="120" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">4. Tribe</label>
+                        <input type="text" name="reporter_tribe" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">5. Occupation</label>
+                        <input type="text" name="reporter_occupation" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">7. Contact</label>
+                        <input type="text" name="reporter_contact" class="form-control" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">6. Residence</label>
+                    <textarea name="reporter_residence" class="form-control" rows="2" required></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Case Details (5W+H) -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">CASE/OCCURRENCE DETAILS </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">1. WHAT happened?</label>
+                    <textarea name="what_happened" class="form-control" rows="4" required 
+                              placeholder="Describe the incident in detail..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">2. WHEN did it happen?</label>
+                    <input type="datetime-local" name="when_happened" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">3. WHERE did it happen?</label>
+                    <textarea name="where_happened" class="form-control" rows="2" required 
+                              placeholder="Specific location of the incident..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">4. WHO was involved? (By whom?)</label>
+                    <textarea name="who_involved" class="form-control" rows="3" required 
+                              placeholder="Victims, suspects, witnesses..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">5. WHY did it happen?</label>
+                    <textarea name="why_happened" class="form-control" rows="2" 
+                              placeholder="Motive or reason (if known)..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">6. HOW did it happen?</label>
+                    <textarea name="how_happened" class="form-control" rows="2" required 
+                              placeholder="Method, weapons used, means..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Type of Crime</label>
+                    <select name="crime_type" class="form-control" required>
+                        <option value="">Select Crime Type</option>
+                        {% for code, name in crime_types %}
+                        <option value="{{ code }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-save"></i> Submit
+        </button>
+    </form>
+</div>
+{% endblock %}

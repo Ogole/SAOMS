@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Enroll Face{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-camera"></i> Enroll Face - {{ profile.user.get_full_name }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="scanner-container mb-3" style="position: relative; max-width: 400px; margin: 0 auto;">
+                        <video id="video" width="100%" autoplay playsinline 
+                               style="border-radius: 10px; border: 3px solid #1a237e;"></video>
+                        
+                        <!-- Face Guide Box -->
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                    width: 160px; height: 200px; border: 2px dashed #00ff00; border-radius: 15px; 
+                                    pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.3);"></div>
+                        
+                        <small style="position: absolute; bottom: -25px; left: 0; right: 0; 
+                                     text-align: center; color: #666;">
+                            Position your face in the green box
+                        </small>
+                    </div>
+                    
+                    <div class="alert alert-info text-start mb-3" style="font-size: 0.85rem;">
+                        <strong><i class="bi bi-info-circle"></i> Tips for best capture:</strong>
+                        <ul class="mb-0 mt-1">
+                            <li>Face the camera directly</li>
+                            <li>Ensure good lighting on your face</li>
+                            <li>Remove glasses if possible</li>
+                            <li>Keep a neutral expression</li>
+                            <li>Only one person in frame</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post" id="enrollForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="face_image_data" id="faceImageData">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="captureFace()">
+                            <i class="bi bi-camera"></i> Capture & Enroll
+                        </button>
+                    </form>
+                    <div id="status" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let stream = null;
+
+async function startAddCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                facingMode: 'user', 
+                width: { ideal: 640 }, 
+                height: { ideal: 480 },
+                frameRate: { ideal: 30 }
+            }
+        });
+        document.getElementById('video').srcObject = stream;
+    } catch(e) {
+        document.getElementById('status').innerHTML = 
+            '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> Camera unavailable. Check permissions.</div>';
+    }
+}
+
+function captureFace() {
+    const video = document.getElementById('video');
+    if (!video.srcObject) {
+        document.getElementById('status').innerHTML = 
+            '<div class="alert alert-warning">Camera not ready. Please wait.</div>';
+        return;
+    }
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    
+    document.getElementById('faceImageData').value = canvas.toDataURL('image/jpeg', 0.9);
+    document.getElementById('status').innerHTML = 
+        '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Enrolling face...</div>';
+    document.getElementById('enrollForm').submit();
+}
+
+// Stop camera when leaving page
+window.addEventListener('beforeunload', () => {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+});
+
+// Start camera on page load
+startAddCamera();
+</script>
+{% endblock %}

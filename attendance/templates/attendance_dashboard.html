@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-fingerprint"></i> Attendance Dashboard</h2>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-check" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ present_today }}</h3>
+                    <small>Present Today</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-people" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ total_officers }}</h3>
+                    <small>Total Officers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-building" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ station.name|default:"N/A" }}</h3>
+                    <small>Station</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ today|date:"d/m/Y" }}</h3>
+                    <small>Today</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Check In/Out Buttons -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            {% if today_attendance and today_attendance.check_in_time %}
+            <button class="btn btn-success btn-lg w-100" disabled>
+                <i class="bi bi-check-circle"></i> Checked In at {{ today_attendance.check_in_time|time:"H:i" }}
+            </button>
+            {% else %}
+            <a href="{% url 'attendance:check_in' %}" class="btn btn-success btn-lg w-100">
+                <i class="bi bi-box-arrow-in-right"></i> Check In
+            </a>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {% if today_attendance and today_attendance.check_out_time %}
+            <button class="btn btn-danger btn-lg w-100" disabled>
+                <i class="bi bi-check-circle"></i> Checked Out at {{ today_attendance.check_out_time|time:"H:i" }}
+            </button>
+            {% elif today_attendance and today_attendance.check_in_time %}
+            <a href="{% url 'attendance:check_out' %}" class="btn btn-danger btn-lg w-100">
+                <i class="bi bi-box-arrow-right"></i> Check Out
+            </a>
+            {% else %}
+            <button class="btn btn-secondary btn-lg w-100" disabled>
+                <i class="bi bi-box-arrow-right"></i> Check In First
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Today's Attendance -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Today's Attendance - {{ station.name|default:"Station" }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Officer</th>
+                            <th>Rank</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in today_records %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ record.profile.user.get_full_name }}</td>
+                            <td>{{ record.profile.get_rank_display }}</td>
+                            <td>{{ record.check_in_time|time:"H:i"|default:"--:--" }}</td>
+                            <td>{{ record.check_out_time|time:"H:i"|default:"--:--" }}</td>
+                            <td>
+                                <span class="badge {% if record.status == 'PRESENT' %}bg-success
+                                    {% elif record.status == 'LATE' %}bg-warning
+                                    {% elif record.status == 'ABSENT' %}bg-danger
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ record.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">No attendance records for today</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

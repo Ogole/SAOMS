@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Station Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-building"></i> {{ station.name|default:"Station" }} Dashboard</h2>
+        <span class="badge bg-primary p-2">{{ station.station_code }}</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white text-center p-3">
+                <h3>{{ total_officers }}</h3><small>Officers</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white text-center p-3">
+                <h3>{{ today_present }}</h3><small>Present Today</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white text-center p-3">
+                <h3>{{ open_cases }}</h3><small>Open Cases</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white text-center p-3">
+                <h3>{{ closed_cases }}</h3><small>Closed Cases</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Attendance -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-person-check"></i> Today's Attendance</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead><tr><th>Officer</th><th>Rank</th><th>Check In</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for att in today_attendance_list %}
+                    <tr>
+                        <td>{{ att.profile.user.get_full_name }}</td>
+                        <td>{{ att.profile.get_rank_display }}</td>
+                        <td>{{ att.check_in_time|time:"H:i"|default:"--:--" }}</td>
+                        <td><span class="badge bg-{% if att.status == 'PRESENT' %}success{% elif att.status == 'ABSENT' %}danger{% else %}warning{% endif %}">{{ att.get_status_display }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center">No records yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row">
+        <div class="col-md-4"><a href="{% url 'attendance:dashboard' %}" class="btn btn-success w-100"><i class="bi bi-fingerprint"></i> Attendance</a></div>
+        <div class="col-md-4"><a href="{% url 'occurrence:create' %}" class="btn btn-danger w-100"><i class="bi bi-plus-circle"></i> New Case</a></div>
+        <div class="col-md-4"><a href="{% url 'occurrence:list' %}" class="btn btn-primary w-100"><i class="bi bi-list"></i> Case List</a></div>
+    </div>
+</div>
+{% endblock %}

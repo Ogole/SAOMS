@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">
+        <i class="bi bi-speedometer2"></i> Dashboard
+        <small class="text-muted">- {{ station.name|default:"No Station Assigned" }}</small>
+    </h2>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4 g-2">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <h6>Station Officers</h6>
+                <div class="number">{{ total_officers }}</div>
+            </div>
+        </div>
+        <div class="col-md-3 g-2">
+            <div class="card stat-card">
+                <h6>Present Today</h6>
+                <div class="number">{{ today_attendance }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <h6>Open Cases</h6>
+                <div class="number">{{ open_cases }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <h6>Investigating</h6>
+                <div class="number">{{ investigating }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'attendance:check_in' %}" class="btn btn-success w-100">
+                                <i class="bi bi-box-arrow-in-right"></i> Check In
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'occurrence:create' %}" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-circle"></i> New Case
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Total Cases</h5>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: #1a237e;"></i>
+                    <h3 class="mt-2">{{ total_cases }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Cases -->
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Cases</h5>
+        </div>
+        <div class="card-body">
+            {% if recent_cases %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Type</th>
+                            <th>Reporter</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in recent_cases %}
+                        <tr>
+                            <td><a href="{% url 'occurrence:detail' case.reference_number %}">{{ case.reference_number }}</a></td>
+                            <td>{{ case.get_crime_type_display }}</td>
+                            <td>{{ case.reporter_full_name }}</td>
+                            <td>
+                                <span class="badge bg-{% if case.case_status == 'OPEN' %}warning{% elif case.case_status == 'INVESTIGATING' %}info{% elif case.case_status == 'CLOSED' %}success{% else %}secondary{% endif %}">
+                                    {{ case.get_case_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ case.date_reported|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted">No cases yet</p>
+            {% endif %}
+            <a href="{% url 'occurrence:list' %}" class="btn btn-outline-primary btn-sm">View All Cases</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

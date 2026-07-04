@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Stations{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-building"></i> Manage Stations</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStationModal">
+            <i class="bi bi-plus-circle"></i> Add Station
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            
+                            <th>Type</th>
+                            <th>District</th>
+                            <th>Officers</th>
+                            <th>Commander</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for station in stations %}
+                        <tr>
+                            <td><strong>{{ station.name }}</strong></td>
+                            
+                            <td>{{ station.get_station_type_display }}</td>
+                            <td>{{ station.district.name }}</td>
+                            <td>{{ station.current_officer_count }}</td>
+                            <td>{{ station.station_commander.user.get_full_name|default:"-" }}</td>
+                            <td>
+                                {% if station.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Station Modal -->
+<div class="modal fade" id="addStationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add Station</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'core:add_station' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Station Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                   
+                    <div class="mb-3">
+                        <label class="form-label">District</label>
+                        <select name="district" class="form-control" required>
+                            <option value="">Select</option>
+                            {% for district in districts %}
+                            <option value="{{ district.id }}">{{ district.name }} ({{ district.region.name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Station Type</label>
+                        <select name="station_type" class="form-control">
+                            {% for code, name in station_types %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" name="contact_number" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Capacity</label>
+                        <input type="number" name="capacity" class="form-control" value="12">
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_24_hours" class="form-check-input" id="is24">
+                        <label class="form-check-label" for="is24">24 Hours Operation</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Station</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

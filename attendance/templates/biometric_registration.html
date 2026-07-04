@@ -1,0 +1,114 @@
+<!-- biometric_registration.html -->
+<form method="post" enctype="multipart/form-data" id="biometricForm">
+    {% csrf_token %}
+    {{ form.officer_id }}
+    
+    <!-- Biometric Method Selection -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Select Biometric Method</h5>
+        </div>
+        <div class="card-body">
+            {{ form.biometric_method }}
+        </div>
+    </div>
+    
+    <!-- Face Recognition Section -->
+    <div id="faceSection" class="card mb-4">
+        <div class="card-header">
+            <h5><i class="bi bi-camera"></i> Face Registration</h5>
+        </div>
+        <div class="card-body text-center">
+            <video id="video" width="320" height="240" autoplay></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <br>
+            <button type="button" class="btn btn-primary" onclick="captureFace()">
+                <i class="bi bi-camera"></i> Capture Face
+            </button>
+            <br><br>
+            <p>OR</p>
+            {{ form.face_image }}
+        </div>
+    </div>
+    
+    <!-- Fingerprint Section -->
+    <div id="fingerprintSection" class="card mb-4">
+        <div class="card-header">
+            <h5><i class="bi bi-fingerprint"></i> Fingerprint Registration</h5>
+        </div>
+        <div class="card-body">
+            <!-- Scanner Selection -->
+            <div class="mb-3">
+                <label>Select Scanner Device:</label>
+                {{ form.fingerprint_device }}
+            </div>
+            
+            <!-- Scan Status -->
+            <div class="text-center mb-3">
+                <div id="fingerprintPreview" class="mb-3">
+                    <i class="bi bi-fingerprint" style="font-size: 48px;"></i>
+                </div>
+                
+                <div id="scanStatus" class="mb-2">Ready to scan</div>
+                
+                <div class="progress mb-3">
+                    <div id="scanProgress" class="progress-bar" 
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                
+                <button type="button" class="btn btn-warning btn-lg" 
+                        onclick="registerFingerprint()">
+                    <i class="bi bi-fingerprint"></i> Scan Fingerprint
+                </button>
+                
+                <button type="button" class="btn btn-outline-warning" 
+                        onclick="registerAllFingers()">
+                    <i class="bi bi-hand-index"></i> Scan All Fingers
+                </button>
+            </div>
+            
+            <!-- Hidden fields for fingerprint data -->
+            {{ form.fingerprint_data }}
+            {{ form.fingerprint_thumb }}
+            {{ form.fingerprint_index }}
+            {{ form.fingerprint_quality }}
+            {{ form.scanner_serial }}
+        </div>
+    </div>
+    
+    <!-- Submit -->
+    <button type="submit" class="btn btn-success btn-lg w-100" id="submitBiometric" disabled>
+        <i class="bi bi-check-circle"></i> Register Biometrics
+    </button>
+</form>
+
+<!-- Include the fingerprint scanner JavaScript -->
+<script src="{% static 'js/fingerprint_scanner.js' %}"></script>
+
+<script>
+// Show/hide sections based on selected method
+document.querySelectorAll('input[name="biometric_method"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const method = this.value;
+        document.getElementById('faceSection').style.display = 
+            (method === 'FACE' || method === 'BOTH') ? 'block' : 'none';
+        document.getElementById('fingerprintSection').style.display = 
+            (method === 'FINGERPRINT' || method === 'BOTH') ? 'block' : 'none';
+    });
+});
+
+// Face capture function
+function captureFace() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    
+    // Convert to base64 and store in hidden field
+    const imageData = canvas.toDataURL('image/jpeg');
+    document.getElementById('faceImageData').value = imageData;
+    
+    alert('Face captured successfully!');
+}
+</script>
